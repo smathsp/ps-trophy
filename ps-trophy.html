@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayStation 奖杯</title>
+    <style>
+        :root {
+            /* 暗色主题 */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #282828;
+            --text-primary: #fff;
+            --text-secondary: #aaa;
+            --border-color: #444;
+            --accent-color: #00b0ff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --container-bg: rgba(40, 40, 40, 0.95);
+            --container-border: rgba(255, 255, 255, 0.1);
+            --container-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --container-inset: rgba(255, 255, 255, 0.1);
+            --progress-bg: rgba(40, 40, 40, 0.9);
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --gradient-light: rgba(255, 255, 255, 0.05);
+            --gradient-dark: rgba(255, 255, 255, 0.02);
+            --border-radius: 12px;
+            --gap-small: 10px;
+            --gap-medium: 16px;
+            --gap-large: 24px;
+            --gap-xlarge: 32px;
+        }
+
+        /* 亮色主题 */
+        [data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #e0e0e0;
+            --accent-color: #1976d2;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --container-border: rgba(0, 0, 0, 0.1);
+            --container-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            --container-inset: rgba(255, 255, 255, 0.8);
+            --progress-bg: rgba(255, 255, 255, 0.9);
+            --hover-bg: rgba(0, 0, 0, 0.05);
+            --gradient-light: rgba(255, 255, 255, 0.3);
+            --gradient-dark: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .trophy-container {
+            background: var(--container-bg);
+            border: 1px solid var(--container-border);
+            border-radius: var(--border-radius);
+            padding: 20px 24px;
+            min-width: 320px;
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: var(--gap-large);
+            box-shadow: 
+                var(--container-shadow),
+                inset 0 1px 0 var(--container-inset);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 内部光泽效果 */
+        .trophy-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                var(--gradient-light) 0%, 
+                transparent 50%, 
+                var(--gradient-dark) 100%);
+            border-radius: var(--border-radius);
+            pointer-events: none;
+        }
+
+        .trophy-container:hover {
+            transform: translateY(-4px);
+            border-color: var(--container-border);
+            filter: brightness(1.05);
+        }
+
+        /* 暗色主题悬停效果 */
+        :root .trophy-container:hover {
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* 亮色主题悬停效果 */
+        [data-theme="light"] .trophy-container:hover {
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .summary,
+        .trophy-details,
+        .summary-item,
+        .trophy-item {
+            position: relative;
+            z-index: 2;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex: 1;
+            text-align: center;
+            gap: var(--gap-medium);
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .summary-item .number {
+            font-size: clamp(28px, 5vw, 36px);
+            font-weight: bold;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .summary-item .label {
+            font-size: clamp(14px, 3vw, 16px);
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .progress-circle {
+            position: relative;
+            width: clamp(60px, 12vw, 80px);
+            height: clamp(60px, 12vw, 80px);
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-color) 0% var(--progress, 35%), var(--border-color) var(--progress, 35%) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .progress-circle::before {
+            content: "";
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            background: var(--progress-bg);
+            border-radius: 50%;
+        }
+
+        .progress-percentage {
+            position: relative;
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .trophy-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: var(--gap-xlarge);
+            border-left: 1px solid var(--border-color);
+            flex: 1;
+            gap: var(--gap-medium);
+            min-width: 0;
+        }
+
+        .trophy-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--gap-small);
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .trophy-item:hover {
+            background: var(--hover-bg);
+            border: 1px solid var(--container-border);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .trophy-item:active {
+            transform: translateY(0);
+        }
+
+        .trophy-item img {
+            width: clamp(32px, 6vw, 48px);
+            height: auto;
+            transition: transform 0.2s ease;
+            user-select: none;
+        }
+
+        /* 亮色主题下图标的阴影效果 */
+        [data-theme="light"] .trophy-item img {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .trophy-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .trophy-item .count {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: bold;
+            line-height: 1;
+            user-select: none;
+        }
+
+        /* 交互提示已移除 */
+
+        /* 点击反馈动画 */
+        @keyframes clickFeedback {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .trophy-item.clicked {
+            animation: clickFeedback 0.2s ease;
+        }
+
+        /* 数字变化动画 */
+        @keyframes numberChange {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: var(--accent-color); }
+            100% { transform: scale(1); }
+        }
+
+        .count.changed {
+            animation: numberChange 0.3s ease;
+        }
+
+        /* 操作提示 */
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--container-bg);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid var(--container-border);
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .trophy-container {
+                flex-direction: column;
+                gap: var(--gap-medium);
+                padding: 16px 20px;
+            }
+
+            .trophy-details {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding-left: 0;
+                padding-top: var(--gap-medium);
+                width: 100%;
+            }
+
+            .summary {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .trophy-item {
+                gap: 6px;
+            }
+            
+            .trophy-details {
+                gap: 8px;
+            }
+        }
+
+        /* 加载动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .trophy-container {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* 进度圆环动画 */
+        @keyframes progressAnimation {
+            from {
+                background: conic-gradient(var(--accent-color) 0% 0%, var(--border-color) 0% 100%);
+            }
+        }
+
+        .progress-circle.animated {
+            animation: progressAnimation 1s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="trophy-container">
+        <div class="summary">
+            <div class="summary-item">
+                <div class="number" id="total-earned">17</div>
+                <div class="label">已获得</div>
+            </div>
+            <div class="summary-item">
+                <div class="progress-circle" id="progress-circle">
+                    <div class="progress-percentage" id="progress-percentage">35%</div>
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="number" id="total-available">63</div>
+                <div class="label">可获得</div>
+            </div>
+        </div>
+        <div class="trophy-details">
+            <div class="trophy-item">
+                <img src="白金.png" alt="白金奖杯" loading="lazy">
+                <div class="count" data-trophy="platinum">0</div>
+            </div>
+            <div class="trophy-item">
+                <img src="金.png" alt="金奖杯" loading="lazy">
+                <div class="count" data-trophy="gold">0</div>
+            </div>
+            <div class="trophy-item">
+                <img src="银.png" alt="银奖杯" loading="lazy">
+                <div class="count" data-trophy="silver">0</div>
+            </div>
+            <div class="trophy-item">
+                <img src="铜.png" alt="铜奖杯" loading="lazy">
+                <div class="count" data-trophy="bronze">37</div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // 配置文件管理类
+        class ConfigManager {
+            constructor() {
+                this.configPath = './config.json';
+                this.defaultConfig = {
+                    gameInfo: {
+                        name: "PlayStation 游戏",
+                        platform: "PS5",
+                        lastUpdated: new Date().toISOString().split('T')[0]
+                    },
+                    trophyData: {
+                        totalAvailable: 63,
+                        platinum: 0,
+                        gold: 0,
+                        silver: 0,
+                        bronze: 37
+                    },
+                    settings: {
+                        autoSave: true,
+                        animationDuration: 800,
+                        theme: "dark",
+                        language: "zh-CN"
+                    },
+                    ui: {
+                        showPercentage: true,
+                        showAnimations: true,
+                        compactMode: false
+                    }
+                };
+            }
+
+            // 加载配置
+            async loadConfig() {
+                try {
+                    const response = await fetch(this.configPath);
+                    if (response.ok) {
+                        const config = await response.json();
+                        return { ...this.defaultConfig, ...config };
+                    }
+                } catch (error) {
+                    console.warn('无法加载配置文件，使用默认配置:', error);
+                }
+                return this.defaultConfig;
+            }
+
+            // 保存配置到localStorage（模拟文件保存）
+            saveConfig(config) {
+                try {
+                    config.gameInfo.lastUpdated = new Date().toISOString().split('T')[0];
+                    localStorage.setItem('trophyConfig', JSON.stringify(config));
+                    console.log('配置已保存到本地存储');
+                    return true;
+                } catch (error) {
+                    console.error('保存配置失败:', error);
+                    return false;
+                }
+            }
+
+            // 从localStorage加载配置
+            loadLocalConfig() {
+                try {
+                    const stored = localStorage.getItem('trophyConfig');
+                    if (stored) {
+                        return JSON.parse(stored);
+                    }
+                } catch (error) {
+                    console.warn('无法加载本地配置:', error);
+                }
+                return null;
+            }
+        }
+
+        // 奖杯数据管理类
+        class TrophyManager {
+            constructor() {
+                this.configManager = new ConfigManager();
+                this.config = null;
+                this.data = {};
+                
+                this.elements = {
+                    totalEarned: document.getElementById('total-earned'),
+                    totalAvailable: document.getElementById('total-available'),
+                    progressPercentage: document.getElementById('progress-percentage'),
+                    progressCircle: document.getElementById('progress-circle'),
+                    platinum: document.querySelector('[data-trophy="platinum"]'),
+                    gold: document.querySelector('[data-trophy="gold"]'),
+                    silver: document.querySelector('[data-trophy="silver"]'),
+                    bronze: document.querySelector('[data-trophy="bronze"]')
+                };
+                
+                this.init();
+            }
+
+            // 初始化
+            async init() {
+                await this.loadConfig();
+                this.setupEventListeners();
+                this.applyTheme();
+                this.updateUI();
+                this.addProgressAnimation();
+            }
+
+            // 加载配置
+            async loadConfig() {
+                // 优先从localStorage加载
+                let localConfig = this.configManager.loadLocalConfig();
+                if (localConfig) {
+                    this.config = localConfig;
+                    this.data = this.config.trophyData;
+                } else {
+                    // 如果没有本地配置，尝试加载文件配置
+                    this.config = await this.configManager.loadConfig();
+                    this.data = this.config.trophyData;
+                }
+            }
+
+            // 保存配置
+            saveConfig() {
+                if (this.config && this.config.settings.autoSave) {
+                    this.config.trophyData = { ...this.data };
+                    this.configManager.saveConfig(this.config);
+                }
+            }
+
+            // 应用主题
+            applyTheme() {
+                const theme = this.config.settings.theme || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+
+            // 切换主题
+            toggleTheme() {
+                const currentTheme = this.config.settings.theme || 'dark';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                this.config.settings.theme = newTheme;
+                this.applyTheme();
+                this.saveConfig();
+            }
+
+            // 设置事件监听器
+            setupEventListeners() {
+                const trophyTypes = ['platinum', 'gold', 'silver', 'bronze'];
+                
+                trophyTypes.forEach(type => {
+                    const element = this.elements[type].parentElement;
+                    
+                    // 使用右键减少，左键增加的方式
+                    element.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.modifyTrophy(type, 1);
+                    });
+                    
+                    element.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        this.modifyTrophy(type, -1);
+                    });
+                });
+            }
+
+            // 修改奖杯数量
+            modifyTrophy(type, delta) {
+                const newValue = Math.max(0, this.data[type] + delta);
+                
+                if (newValue !== this.data[type]) {
+                    this.data[type] = newValue;
+                    this.updateUI();
+                    this.saveConfig();
+                    this.addClickFeedback(type);
+                    this.addNumberChangeAnimation(type);
+                }
+            }
+
+            // 添加点击反馈动画
+            addClickFeedback(type) {
+                const element = this.elements[type].parentElement;
+                element.classList.add('clicked');
+                setTimeout(() => {
+                    element.classList.remove('clicked');
+                }, 200);
+            }
+
+            // 添加数字变化动画
+            addNumberChangeAnimation(type) {
+                const countElement = this.elements[type];
+                countElement.classList.add('changed');
+                setTimeout(() => {
+                    countElement.classList.remove('changed');
+                }, 300);
+            }
+
+            // 计算已获得奖杯总数
+            getTotalEarned() {
+                return Object.keys(this.data)
+                    .filter(key => key !== 'totalAvailable')
+                    .reduce((total, key) => total + this.data[key], 0);
+            }
+
+            // 计算进度百分比
+            getProgressPercentage() {
+                const totalEarned = this.getTotalEarned();
+                if (this.data.totalAvailable === 0) return 0;
+                return Math.round((totalEarned / this.data.totalAvailable) * 100);
+            }
+
+            // 更新UI显示
+            updateUI() {
+                // 更新各项数据
+                this.elements.totalAvailable.textContent = this.data.totalAvailable;
+                this.elements.totalEarned.textContent = this.getTotalEarned();
+                this.elements.platinum.textContent = this.data.platinum;
+                this.elements.gold.textContent = this.data.gold;
+                this.elements.silver.textContent = this.data.silver;
+                this.elements.bronze.textContent = this.data.bronze;
+                
+                this.updateProgress();
+            }
+
+            // 更新进度显示
+            updateProgress() {
+                const percentage = this.getProgressPercentage();
+                this.elements.progressPercentage.textContent = percentage + '%';
+                
+                // 使用CSS变量更新进度圆环
+                document.documentElement.style.setProperty('--progress', percentage + '%');
+            }
+
+            // 添加进度动画
+            addProgressAnimation() {
+                this.elements.progressCircle.classList.add('animated');
+            }
+
+            // 更新奖杯数据（用于动态更新）
+            updateTrophy(type, count) {
+                if (this.data.hasOwnProperty(type)) {
+                    this.data[type] = Math.max(0, count);
+                    this.updateUI();
+                    this.saveConfig();
+                }
+            }
+
+            // 批量更新奖杯数据
+            updateTrophies(newData) {
+                Object.assign(this.data, newData);
+                this.updateUI();
+                this.saveConfig();
+            }
+
+            // 重置所有奖杯数据
+            resetTrophies() {
+                const confirmed = confirm('确定要重置所有奖杯数据吗？此操作不可撤销。');
+                if (confirmed) {
+                    this.data = {
+                        totalAvailable: this.data.totalAvailable,
+                        platinum: 0,
+                        gold: 0,
+                        silver: 0,
+                        bronze: 0
+                    };
+                    this.updateUI();
+                    this.saveConfig();
+                }
+            }
+
+            // 导出配置
+            exportConfig() {
+                const dataStr = JSON.stringify(this.config, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'trophy-config.json';
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // 获取奖杯数据
+            getData() {
+                return { ...this.data };
+            }
+
+            // 获取完整配置
+            getConfig() {
+                return { ...this.config };
+            }
+        }
+
+        // 工具函数
+        const Utils = {
+            // 防抖函数
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+
+            // 数字动画
+            animateNumber(element, start, end, duration = 800) {
+                const range = end - start;
+                const increment = range / (duration / 16);
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                        current = end;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.round(current);
+                }, 16);
+            },
+
+            // 格式化日期
+            formatDate(date) {
+                return new Date(date).toLocaleDateString('zh-CN');
+            }
+        };
+
+        // 初始化应用
+        let trophyManager;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            trophyManager = new TrophyManager();
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 's':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.saveConfig();
+                            console.log('手动保存配置');
+                        }
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.resetTrophies();
+                        }
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.exportConfig();
+                        }
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.toggleTheme();
+                            console.log('主题已切换');
+                        }
+                        break;
+                }
+            }
+        });
+
+        // 导出到全局作用域，方便调试和外部调用
+        window.TrophyApp = {
+            manager: () => trophyManager,
+            updateTrophy: (type, count) => trophyManager?.updateTrophy(type, count),
+            updateTrophies: (data) => trophyManager?.updateTrophies(data),
+            resetTrophies: () => trophyManager?.resetTrophies(),
+            exportConfig: () => trophyManager?.exportConfig(),
+            getData: () => trophyManager?.getData(),
+            getConfig: () => trophyManager?.getConfig(),
+            toggleTheme: () => trophyManager?.toggleTheme(),
+            setTheme: (theme) => {
+                if (trophyManager && ['dark', 'light'].includes(theme)) {
+                    trophyManager.config.settings.theme = theme;
+                    trophyManager.applyTheme();
+                    trophyManager.saveConfig();
+                }
+            }
+        };
+
+        // 页面卸载时保存数据
+        window.addEventListener('beforeunload', () => {
+            if (trophyManager) {
+                trophyManager.saveConfig();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

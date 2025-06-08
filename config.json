@@ -1,0 +1,25 @@
+{
+  "gameInfo": {
+    "name": "PlayStation 游戏",
+    "platform": "PS5",
+    "lastUpdated": "2025-06-08"
+  },
+  "trophyData": {
+    "totalAvailable": 63,
+    "platinum": 0,
+    "gold": 0,
+    "silver": 0,
+    "bronze": 37
+  },
+  "settings": {
+    "autoSave": true,
+    "animationDuration": 800,
+    "theme": "dark",
+    "language": "zh-CN"
+  },
+  "ui": {
+    "showPercentage": true,
+    "showAnimations": true,
+    "compactMode": false
+  }
+}
