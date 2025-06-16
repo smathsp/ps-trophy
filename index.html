@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayStation 奖杯</title>
+    <style>
+        :root {
+            /* 暗色主题 */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #282828;
+            --text-primary: #fff;
+            --text-secondary: #aaa;
+            --border-color: #444;
+            --accent-color: #00b0ff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --container-bg: rgba(40, 40, 40, 0.95);
+            --container-border: rgba(255, 255, 255, 0.1);
+            --container-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --container-inset: rgba(255, 255, 255, 0.1);
+            --progress-bg: rgba(40, 40, 40, 0.9);
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --gradient-light: rgba(255, 255, 255, 0.05);
+            --gradient-dark: rgba(255, 255, 255, 0.02);
+            --border-radius: 12px;
+            --gap-small: 10px;
+            --gap-medium: 16px;
+            --gap-large: 24px;
+            --gap-xlarge: 32px;
+        }
+
+        /* 亮色主题 */
+        [data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #e0e0e0;
+            --accent-color: #1976d2;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --container-border: rgba(0, 0, 0, 0.1);
+            --container-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            --container-inset: rgba(255, 255, 255, 0.8);
+            --progress-bg: rgba(255, 255, 255, 0.9);
+            --hover-bg: rgba(0, 0, 0, 0.05);
+            --gradient-light: rgba(255, 255, 255, 0.3);
+            --gradient-dark: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .trophy-container {
+            background: var(--container-bg);
+            border: 1px solid var(--container-border);
+            border-radius: var(--border-radius);
+            padding: 20px 24px;
+            min-width: 320px;
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: var(--gap-large);
+            box-shadow: 
+                var(--container-shadow),
+                inset 0 1px 0 var(--container-inset);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 内部光泽效果 */
+        .trophy-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                var(--gradient-light) 0%, 
+                transparent 50%, 
+                var(--gradient-dark) 100%);
+            border-radius: var(--border-radius);
+            pointer-events: none;
+        }
+
+        .trophy-container:hover {
+            transform: translateY(-4px);
+            border-color: var(--container-border);
+            filter: brightness(1.05);
+        }
+
+        /* 暗色主题悬停效果 */
+        :root .trophy-container:hover {
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* 亮色主题悬停效果 */
+        [data-theme="light"] .trophy-container:hover {
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .summary,
+        .trophy-details,
+        .summary-item,
+        .trophy-item {
+            position: relative;
+            z-index: 2;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex: 1;
+            text-align: center;
+            gap: var(--gap-medium);
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .summary-item .number {
+            font-size: clamp(28px, 5vw, 36px);
+            font-weight: bold;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .summary-item .label {
+            font-size: clamp(14px, 3vw, 16px);
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .progress-circle {
+            position: relative;
+            width: clamp(60px, 12vw, 80px);
+            height: clamp(60px, 12vw, 80px);
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-color) 0% var(--progress, 35%), var(--border-color) var(--progress, 35%) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .progress-circle::before {
+            content: "";
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            background: var(--progress-bg);
+            border-radius: 50%;
+        }
+
+        .progress-percentage {
+            position: relative;
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .trophy-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: var(--gap-xlarge);
+            border-left: 1px solid var(--border-color);
+            flex: 1;
+            gap: var(--gap-medium);
+            min-width: 0;
+        }
+
+        .trophy-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--gap-small);
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .trophy-item:hover {
+            background: var(--hover-bg);
+            border: 1px solid var(--container-border);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .trophy-item:active {
+            transform: translateY(0);
+        }
+
+        .trophy-item img {
+            width: clamp(32px, 6vw, 48px);
+            height: auto;
+            transition: transform 0.2s ease;
+            user-select: none;
+        }
+
+        /* 亮色主题下图标的阴影效果 */
+        [data-theme="light"] .trophy-item img {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .trophy-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .trophy-item .count {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: bold;
+            line-height: 1;
+            user-select: none;
+        }
+
+        /* 交互提示已移除 */
+
+        /* 点击反馈动画 */
+        @keyframes clickFeedback {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .trophy-item.clicked {
+            animation: clickFeedback 0.2s ease;
+        }
+
+        /* 数字变化动画 */
+        @keyframes numberChange {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: var(--accent-color); }
+            100% { transform: scale(1); }
+        }
+
+        .count.changed {
+            animation: numberChange 0.3s ease;
+        }
+
+        /* 操作提示 */
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--container-bg);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid var(--container-border);
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .trophy-container {
+                flex-direction: column;
+                gap: var(--gap-medium);
+                padding: 16px 20px;
+            }
+
+            .trophy-details {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding-left: 0;
+                padding-top: var(--gap-medium);
+                width: 100%;
+            }
+
+            .summary {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .trophy-item {
+                gap: 6px;
+            }
+            
+            .trophy-details {
+                gap: 8px;
+            }
+        }
+
+        /* 加载动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .trophy-container {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* 进度圆环动画 */
+        @keyframes progressAnimation {
+            from {
+                background: conic-gradient(var(--accent-color) 0% 0%, var(--border-color) 0% 100%);
+            }
+        }
+
+        .progress-circle.animated {
+            animation: progressAnimation 1s ease-out;
+        }
+
+        /* 悬浮窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--container-bg);
+            border: 1px solid var(--container-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            min-width: 400px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--container-shadow);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            background: var(--hover-bg);
+        }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .trophy-input-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .trophy-input-group:hover {
+            border-color: var(--accent-color);
+            background: var(--hover-bg);
+        }
+
+        .trophy-input-icon {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .trophy-input-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .trophy-input-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .trophy-input-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .trophy-input-fields {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .input-field label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .input-field input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(0, 176, 255, 0.2);
+        }
+
+        .input-field input:invalid {
+            border-color: #f44336;
+        }
+
+        .summary-section {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .summary-item-modal {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--container-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-item-modal .label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .summary-item-modal .value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary:hover {
+            background: rgba(0, 176, 255, 0.8);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 16px;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        /* 分数详情样式 */
+        .score-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: var(--container-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-trophy {
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .score-formula {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .score-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 6px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .score-label {
+            font-size: 14px;
+        }
+
+        .score-value {
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 响应式悬浮窗 */
+        @media (max-width: 768px) {
+            .modal {
+                min-width: 320px;
+                margin: 20px;
+            }
+            
+            .trophy-input-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            
+            .trophy-input-info {
+                text-align: center;
+            }
+            
+            .trophy-input-fields {
+                justify-content: center;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="trophy-container">
+        <div class="summary">
+            <div class="summary-item">
+                <div class="number" id="total-earned">17</div>
+                <div class="label">已获得</div>
+            </div>
+            <div class="summary-item">
+                <div class="progress-circle" id="progress-circle">
+                    <div class="progress-percentage" id="progress-percentage">35%</div>
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="number" id="total-available">63</div>
+                <div class="label">可获得</div>
+            </div>
+        </div>
+        <div class="trophy-details">
+            <div class="trophy-item">
+                <img src="白金.png" alt="白金奖杯" loading="lazy">
+                <div class="count" data-trophy="platinum">0</div>
+            </div>
+            <div class="trophy-item">
+                <img src="金.png" alt="金奖杯" loading="lazy">
+                <div class="count" data-trophy="gold">0</div>
+            </div>
+            <div class="trophy-item">
+                <img src="银.png" alt="银奖杯" loading="lazy">
+                <div class="count" data-trophy="silver">0</div>
+            </div>
+            <div class="trophy-item">
+                <img src="铜.png" alt="铜奖杯" loading="lazy">
+                <div class="count" data-trophy="bronze">37</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 悬浮窗 -->
+    <div class="modal-overlay" id="trophy-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">奖杯数据设置</h2>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-content">
+                <!-- 白金奖杯 -->
+                <div class="trophy-input-group">
+                    <img src="白金.png" alt="白金奖杯" class="trophy-input-icon">
+                    <div class="trophy-input-info">
+                        <div class="trophy-input-label">白金奖杯</div>
+                        <div class="trophy-input-subtitle">最稀有的奖杯类型</div>
+                    </div>
+                    <div class="trophy-input-fields">
+                        <div class="input-field">
+                            <label>已获得</label>
+                            <input type="number" id="platinum-earned" min="0" value="0">
+                        </div>
+                        <div class="input-field">
+                            <label>可获得</label>
+                            <input type="number" id="platinum-available" min="0" value="1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 金奖杯 -->
+                <div class="trophy-input-group">
+                    <img src="金.png" alt="金奖杯" class="trophy-input-icon">
+                    <div class="trophy-input-info">
+                        <div class="trophy-input-label">金奖杯</div>
+                        <div class="trophy-input-subtitle">稀有的奖杯类型</div>
+                    </div>
+                    <div class="trophy-input-fields">
+                        <div class="input-field">
+                            <label>已获得</label>
+                            <input type="number" id="gold-earned" min="0" value="0">
+                        </div>
+                        <div class="input-field">
+                            <label>可获得</label>
+                            <input type="number" id="gold-available" min="0" value="5">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 银奖杯 -->
+                <div class="trophy-input-group">
+                    <img src="银.png" alt="银奖杯" class="trophy-input-icon">
+                    <div class="trophy-input-info">
+                        <div class="trophy-input-label">银奖杯</div>
+                        <div class="trophy-input-subtitle">普通的奖杯类型</div>
+                    </div>
+                    <div class="trophy-input-fields">
+                        <div class="input-field">
+                            <label>已获得</label>
+                            <input type="number" id="silver-earned" min="0" value="0">
+                        </div>
+                        <div class="input-field">
+                            <label>可获得</label>
+                            <input type="number" id="silver-available" min="0" value="20">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 铜奖杯 -->
+                <div class="trophy-input-group">
+                    <img src="铜.png" alt="铜奖杯" class="trophy-input-icon">
+                    <div class="trophy-input-info">
+                        <div class="trophy-input-label">铜奖杯</div>
+                        <div class="trophy-input-subtitle">最常见的奖杯类型</div>
+                    </div>
+                    <div class="trophy-input-fields">
+                        <div class="input-field">
+                            <label>已获得</label>
+                            <input type="number" id="bronze-earned" min="0" value="17">
+                        </div>
+                        <div class="input-field">
+                            <label>可获得</label>
+                            <input type="number" id="bronze-available" min="0" value="37">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 统计摘要 -->
+                <div class="summary-section">
+                    <div class="summary-title">统计摘要</div>
+                    <div class="summary-grid">
+                        <div class="summary-item-modal">
+                            <span class="label">总已获得</span>
+                            <span class="value" id="modal-total-earned">17</span>
+                        </div>
+                        <div class="summary-item-modal">
+                            <span class="label">总可获得</span>
+                            <span class="value" id="modal-total-available">63</span>
+                        </div>
+                        <div class="summary-item-modal">
+                            <span class="label">完成度</span>
+                            <span class="value" id="modal-completion">27%</span>
+                        </div>
+                        <div class="summary-item-modal">
+                            <span class="label">剩余奖杯</span>
+                            <span class="value" id="modal-remaining">46</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分数详情 -->
+                <div class="summary-section">
+                    <div class="summary-title">🏆 PlayStation 加权计分</div>
+                    <div class="score-details">
+                        <div class="score-item">
+                            <span class="score-trophy">白金奖杯</span>
+                            <span class="score-formula" id="platinum-score-formula">0 × 300分 = 0分</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-trophy">金奖杯</span>
+                            <span class="score-formula" id="gold-score-formula">0 × 90分 = 0分</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-trophy">银奖杯</span>
+                            <span class="score-formula" id="silver-score-formula">0 × 30分 = 0分</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-trophy">铜奖杯</span>
+                            <span class="score-formula" id="bronze-score-formula">17 × 15分 = 255分</span>
+                        </div>
+                        <div class="score-total">
+                            <span class="score-label">总分数：</span>
+                            <span class="score-value" id="total-score-display">255 / 945分</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-text">
+                    快捷键：按 F 键打开/关闭此窗口 | Ctrl+S 保存数据 | ESC 关闭窗口<br>
+                    <strong>PlayStation 加权计分：</strong>铜15分 | 银30分 | 金90分 | 白金300分
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn" id="modal-cancel">取消</button>
+                <button class="btn" id="modal-reset">重置</button>
+                <button class="btn btn-primary" id="modal-save">保存并应用</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // 配置文件管理类
+        class ConfigManager {
+            constructor() {
+                this.configPath = './config.json';
+                this.defaultConfig = {
+                    gameInfo: {
+                        name: "PlayStation 游戏",
+                        platform: "PS5",
+                        lastUpdated: new Date().toISOString().split('T')[0]
+                    },
+                    trophyData: {
+                        totalAvailable: 63,
+                        platinum: 0,
+                        gold: 0,
+                        silver: 0,
+                        bronze: 37
+                    },
+                    settings: {
+                        autoSave: true,
+                        animationDuration: 800,
+                        theme: "dark",
+                        language: "zh-CN"
+                    },
+                    ui: {
+                        showPercentage: true,
+                        showAnimations: true,
+                        compactMode: false
+                    }
+                };
+            }
+
+            // 加载配置
+            async loadConfig() {
+                try {
+                    const response = await fetch(this.configPath);
+                    if (response.ok) {
+                        const config = await response.json();
+                        return { ...this.defaultConfig, ...config };
+                    }
+                } catch (error) {
+                    console.warn('无法加载配置文件，使用默认配置:', error);
+                }
+                return this.defaultConfig;
+            }
+
+            // 保存配置到localStorage（模拟文件保存）
+            saveConfig(config) {
+                try {
+                    config.gameInfo.lastUpdated = new Date().toISOString().split('T')[0];
+                    localStorage.setItem('trophyConfig', JSON.stringify(config));
+                    console.log('配置已保存到本地存储');
+                    return true;
+                } catch (error) {
+                    console.error('保存配置失败:', error);
+                    return false;
+                }
+            }
+
+            // 从localStorage加载配置
+            loadLocalConfig() {
+                try {
+                    const stored = localStorage.getItem('trophyConfig');
+                    if (stored) {
+                        return JSON.parse(stored);
+                    }
+                } catch (error) {
+                    console.warn('无法加载本地配置:', error);
+                }
+                return null;
+            }
+        }
+
+        // 奖杯数据管理类
+        class TrophyManager {
+            constructor() {
+                this.configManager = new ConfigManager();
+                this.config = null;
+                this.data = {};
+                this.availableData = {}; // 新增：存储可获得数量
+                
+                this.elements = {
+                    totalEarned: document.getElementById('total-earned'),
+                    totalAvailable: document.getElementById('total-available'),
+                    progressPercentage: document.getElementById('progress-percentage'),
+                    progressCircle: document.getElementById('progress-circle'),
+                    platinum: document.querySelector('[data-trophy="platinum"]'),
+                    gold: document.querySelector('[data-trophy="gold"]'),
+                    silver: document.querySelector('[data-trophy="silver"]'),
+                    bronze: document.querySelector('[data-trophy="bronze"]')
+                };
+                
+                this.modalElements = {
+                    overlay: document.getElementById('trophy-modal'),
+                    closeBtn: document.getElementById('modal-close'),
+                    cancelBtn: document.getElementById('modal-cancel'),
+                    resetBtn: document.getElementById('modal-reset'),
+                    saveBtn: document.getElementById('modal-save'),
+                    // 已获得输入框
+                    platinumEarned: document.getElementById('platinum-earned'),
+                    goldEarned: document.getElementById('gold-earned'),
+                    silverEarned: document.getElementById('silver-earned'),
+                    bronzeEarned: document.getElementById('bronze-earned'),
+                    // 可获得输入框
+                    platinumAvailable: document.getElementById('platinum-available'),
+                    goldAvailable: document.getElementById('gold-available'),
+                    silverAvailable: document.getElementById('silver-available'),
+                    bronzeAvailable: document.getElementById('bronze-available'),
+                    // 统计显示
+                    modalTotalEarned: document.getElementById('modal-total-earned'),
+                    modalTotalAvailable: document.getElementById('modal-total-available'),
+                    modalCompletion: document.getElementById('modal-completion'),
+                    modalRemaining: document.getElementById('modal-remaining')
+                };
+                
+                this.init();
+            }
+
+            // 初始化
+            async init() {
+                await this.loadConfig();
+                this.setupEventListeners();
+                this.setupModalEventListeners();
+                this.applyTheme();
+                this.updateUI();
+                this.addProgressAnimation();
+            }
+
+            // 加载配置
+            async loadConfig() {
+                // 优先从localStorage加载
+                let localConfig = this.configManager.loadLocalConfig();
+                if (localConfig) {
+                    this.config = localConfig;
+                    this.data = this.config.trophyData;
+                    // 初始化可获得数量数据
+                    this.availableData = this.config.availableData || {
+                        platinum: 1,
+                        gold: 5,
+                        silver: 20,
+                        bronze: 37
+                    };
+                } else {
+                    // 如果没有本地配置，尝试加载文件配置
+                    this.config = await this.configManager.loadConfig();
+                    this.data = this.config.trophyData;
+                    // 初始化可获得数量数据
+                    this.availableData = {
+                        platinum: 1,
+                        gold: 5,
+                        silver: 20,
+                        bronze: 37
+                    };
+                }
+            }
+
+            // 保存配置
+            saveConfig() {
+                if (this.config && this.config.settings.autoSave) {
+                    this.config.trophyData = { ...this.data };
+                    this.config.availableData = { ...this.availableData };
+                    // 重新计算总可获得数量
+                    this.config.trophyData.totalAvailable = this.getTotalAvailable();
+                    this.configManager.saveConfig(this.config);
+                }
+            }
+
+            // 应用主题
+            applyTheme() {
+                const theme = this.config.settings.theme || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+
+            // 切换主题
+            toggleTheme() {
+                const currentTheme = this.config.settings.theme || 'dark';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                this.config.settings.theme = newTheme;
+                this.applyTheme();
+                this.saveConfig();
+            }
+
+            // 设置事件监听器
+            setupEventListeners() {
+                const trophyTypes = ['platinum', 'gold', 'silver', 'bronze'];
+                
+                trophyTypes.forEach(type => {
+                    const element = this.elements[type].parentElement;
+                    
+                    // 使用右键减少，左键增加的方式
+                    element.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.modifyTrophy(type, 1);
+                    });
+                    
+                    element.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        this.modifyTrophy(type, -1);
+                    });
+                });
+            }
+
+            // 设置悬浮窗事件监听器
+            setupModalEventListeners() {
+                // 打开悬浮窗
+                document.addEventListener('keydown', (e) => {
+                    if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        e.preventDefault();
+                        this.openModal();
+                    }
+                    if (e.key === 'Escape') {
+                        this.closeModal();
+                    }
+                });
+
+                // 关闭按钮
+                this.modalElements.closeBtn.addEventListener('click', () => this.closeModal());
+                this.modalElements.cancelBtn.addEventListener('click', () => this.closeModal());
+
+                // 点击背景关闭
+                this.modalElements.overlay.addEventListener('click', (e) => {
+                    if (e.target === this.modalElements.overlay) {
+                        this.closeModal();
+                    }
+                });
+
+                // 保存按钮
+                this.modalElements.saveBtn.addEventListener('click', () => this.saveModalData());
+
+                // 重置按钮
+                this.modalElements.resetBtn.addEventListener('click', () => this.resetModalData());
+
+                // 输入框实时更新
+                const inputElements = [
+                    'platinumEarned', 'goldEarned', 'silverEarned', 'bronzeEarned',
+                    'platinumAvailable', 'goldAvailable', 'silverAvailable', 'bronzeAvailable'
+                ];
+
+                inputElements.forEach(elementName => {
+                    this.modalElements[elementName].addEventListener('input', () => {
+                        this.updateModalSummary();
+                    });
+                });
+            }
+
+            // 修改奖杯数量
+            modifyTrophy(type, delta) {
+                const newValue = Math.max(0, this.data[type] + delta);
+                
+                if (newValue !== this.data[type]) {
+                    this.data[type] = newValue;
+                    this.updateUI();
+                    this.saveConfig();
+                    this.addClickFeedback(type);
+                    this.addNumberChangeAnimation(type);
+                }
+            }
+
+            // 添加点击反馈动画
+            addClickFeedback(type) {
+                const element = this.elements[type].parentElement;
+                element.classList.add('clicked');
+                setTimeout(() => {
+                    element.classList.remove('clicked');
+                }, 200);
+            }
+
+            // 添加数字变化动画
+            addNumberChangeAnimation(type) {
+                const countElement = this.elements[type];
+                countElement.classList.add('changed');
+                setTimeout(() => {
+                    countElement.classList.remove('changed');
+                }, 300);
+            }
+
+            // PlayStation 官方奖杯计分规则
+            getTrophyScores() {
+                return {
+                    bronze: 15,
+                    silver: 30,
+                    gold: 90,
+                    platinum: 300
+                };
+            }
+
+            // 计算已获得奖杯总数
+            getTotalEarned() {
+                return Object.keys(this.data)
+                    .filter(key => key !== 'totalAvailable')
+                    .reduce((total, key) => total + this.data[key], 0);
+            }
+
+            // 计算可获得奖杯总数
+            getTotalAvailable() {
+                return Object.values(this.availableData).reduce((total, value) => total + value, 0);
+            }
+
+            // 计算已获得奖杯分数（加权计分）
+            getEarnedScore() {
+                const scores = this.getTrophyScores();
+                return (this.data.bronze * scores.bronze) +
+                       (this.data.silver * scores.silver) +
+                       (this.data.gold * scores.gold) +
+                       (this.data.platinum * scores.platinum);
+            }
+
+            // 计算总可获得分数（加权计分）
+            getTotalScore() {
+                const scores = this.getTrophyScores();
+                return (this.availableData.bronze * scores.bronze) +
+                       (this.availableData.silver * scores.silver) +
+                       (this.availableData.gold * scores.gold) +
+                       (this.availableData.platinum * scores.platinum);
+            }
+
+            // 计算进度百分比（基于加权分数）
+            getProgressPercentage() {
+                const earnedScore = this.getEarnedScore();
+                const totalScore = this.getTotalScore();
+                if (totalScore === 0) return 0;
+                return Math.round((earnedScore / totalScore) * 100);
+            }
+
+            // 更新UI显示
+            updateUI() {
+                // 更新各项数据
+                this.elements.totalAvailable.textContent = this.getTotalAvailable();
+                this.elements.totalEarned.textContent = this.getTotalEarned();
+                this.elements.platinum.textContent = this.data.platinum;
+                this.elements.gold.textContent = this.data.gold;
+                this.elements.silver.textContent = this.data.silver;
+                this.elements.bronze.textContent = this.data.bronze;
+                
+                this.updateProgress();
+            }
+
+            // 更新进度显示
+            updateProgress() {
+                const percentage = this.getProgressPercentage();
+                this.elements.progressPercentage.textContent = percentage + '%';
+                
+                // 使用CSS变量更新进度圆环
+                document.documentElement.style.setProperty('--progress', percentage + '%');
+            }
+
+            // 添加进度动画
+            addProgressAnimation() {
+                this.elements.progressCircle.classList.add('animated');
+            }
+
+            // 打开悬浮窗
+            openModal() {
+                this.loadDataToModal();
+                this.modalElements.overlay.classList.add('show');
+                // 聚焦到第一个输入框
+                setTimeout(() => {
+                    this.modalElements.platinumEarned.focus();
+                }, 300);
+            }
+
+            // 关闭悬浮窗
+            closeModal() {
+                this.modalElements.overlay.classList.remove('show');
+            }
+
+            // 将当前数据加载到悬浮窗
+            loadDataToModal() {
+                // 加载已获得数据
+                this.modalElements.platinumEarned.value = this.data.platinum || 0;
+                this.modalElements.goldEarned.value = this.data.gold || 0;
+                this.modalElements.silverEarned.value = this.data.silver || 0;
+                this.modalElements.bronzeEarned.value = this.data.bronze || 0;
+
+                // 加载可获得数据
+                this.modalElements.platinumAvailable.value = this.availableData.platinum || 1;
+                this.modalElements.goldAvailable.value = this.availableData.gold || 5;
+                this.modalElements.silverAvailable.value = this.availableData.silver || 20;
+                this.modalElements.bronzeAvailable.value = this.availableData.bronze || 37;
+
+                this.updateModalSummary();
+            }
+
+            // 更新悬浮窗统计摘要
+            updateModalSummary() {
+                const earnedValues = {
+                    platinum: parseInt(this.modalElements.platinumEarned.value) || 0,
+                    gold: parseInt(this.modalElements.goldEarned.value) || 0,
+                    silver: parseInt(this.modalElements.silverEarned.value) || 0,
+                    bronze: parseInt(this.modalElements.bronzeEarned.value) || 0
+                };
+
+                const availableValues = {
+                    platinum: parseInt(this.modalElements.platinumAvailable.value) || 0,
+                    gold: parseInt(this.modalElements.goldAvailable.value) || 0,
+                    silver: parseInt(this.modalElements.silverAvailable.value) || 0,
+                    bronze: parseInt(this.modalElements.bronzeAvailable.value) || 0
+                };
+
+                const totalEarned = Object.values(earnedValues).reduce((sum, val) => sum + val, 0);
+                const totalAvailable = Object.values(availableValues).reduce((sum, val) => sum + val, 0);
+                
+                // 使用加权计分制计算进度
+                const scores = this.getTrophyScores();
+                const earnedScore = (earnedValues.bronze * scores.bronze) +
+                                   (earnedValues.silver * scores.silver) +
+                                   (earnedValues.gold * scores.gold) +
+                                   (earnedValues.platinum * scores.platinum);
+                
+                const totalScore = (availableValues.bronze * scores.bronze) +
+                                  (availableValues.silver * scores.silver) +
+                                  (availableValues.gold * scores.gold) +
+                                  (availableValues.platinum * scores.platinum);
+                
+                const completion = totalScore > 0 ? Math.round((earnedScore / totalScore) * 100) : 0;
+                const remaining = totalAvailable - totalEarned;
+
+                this.modalElements.modalTotalEarned.textContent = totalEarned;
+                this.modalElements.modalTotalAvailable.textContent = totalAvailable;
+                this.modalElements.modalCompletion.textContent = completion + '%';
+                this.modalElements.modalRemaining.textContent = remaining;
+
+                // 更新分数详情显示
+                this.updateScoreDetails(earnedValues, availableValues, earnedScore, totalScore);
+
+                // 验证数据合理性
+                Object.keys(earnedValues).forEach(type => {
+                    const earnedInput = this.modalElements[type + 'Earned'];
+                    const availableInput = this.modalElements[type + 'Available'];
+                    
+                    if (earnedValues[type] > availableValues[type]) {
+                        earnedInput.style.borderColor = '#f44336';
+                        earnedInput.title = '已获得数量不能超过可获得数量';
+                    } else {
+                        earnedInput.style.borderColor = '';
+                        earnedInput.title = '';
+                    }
+                });
+            }
+
+            // 更新分数详情显示
+            updateScoreDetails(earnedValues, availableValues, earnedScore, totalScore) {
+                const scores = this.getTrophyScores();
+                
+                // 更新各奖杯分数公式
+                document.getElementById('platinum-score-formula').textContent = 
+                    `${earnedValues.platinum} × ${scores.platinum}分 = ${earnedValues.platinum * scores.platinum}分`;
+                
+                document.getElementById('gold-score-formula').textContent = 
+                    `${earnedValues.gold} × ${scores.gold}分 = ${earnedValues.gold * scores.gold}分`;
+                
+                document.getElementById('silver-score-formula').textContent = 
+                    `${earnedValues.silver} × ${scores.silver}分 = ${earnedValues.silver * scores.silver}分`;
+                
+                document.getElementById('bronze-score-formula').textContent = 
+                    `${earnedValues.bronze} × ${scores.bronze}分 = ${earnedValues.bronze * scores.bronze}分`;
+                
+                // 更新总分数显示
+                document.getElementById('total-score-display').textContent = 
+                    `${earnedScore} / ${totalScore}分`;
+            }
+
+            // 保存悬浮窗数据
+            saveModalData() {
+                const earnedValues = {
+                    platinum: parseInt(this.modalElements.platinumEarned.value) || 0,
+                    gold: parseInt(this.modalElements.goldEarned.value) || 0,
+                    silver: parseInt(this.modalElements.silverEarned.value) || 0,
+                    bronze: parseInt(this.modalElements.bronzeEarned.value) || 0
+                };
+
+                const availableValues = {
+                    platinum: parseInt(this.modalElements.platinumAvailable.value) || 0,
+                    gold: parseInt(this.modalElements.goldAvailable.value) || 0,
+                    silver: parseInt(this.modalElements.silverAvailable.value) || 0,
+                    bronze: parseInt(this.modalElements.bronzeAvailable.value) || 0
+                };
+
+                // 验证数据
+                let hasError = false;
+                Object.keys(earnedValues).forEach(type => {
+                    if (earnedValues[type] > availableValues[type]) {
+                        hasError = true;
+                        alert(`${type}奖杯的已获得数量不能超过可获得数量！`);
+                        return;
+                    }
+                });
+
+                if (hasError) return;
+
+                // 更新数据
+                this.data = earnedValues;
+                this.availableData = availableValues;
+
+                // 更新UI并保存
+                this.updateUI();
+                this.saveConfig();
+                this.closeModal();
+
+                // 显示保存成功提示
+                this.showNotification('数据保存成功！');
+            }
+
+            // 重置悬浮窗数据
+            resetModalData() {
+                if (confirm('确定要重置所有奖杯数据吗？此操作不可撤销。')) {
+                    // 重置为默认值
+                    this.modalElements.platinumEarned.value = 0;
+                    this.modalElements.goldEarned.value = 0;
+                    this.modalElements.silverEarned.value = 0;
+                    this.modalElements.bronzeEarned.value = 0;
+
+                    this.modalElements.platinumAvailable.value = 1;
+                    this.modalElements.goldAvailable.value = 5;
+                    this.modalElements.silverAvailable.value = 20;
+                    this.modalElements.bronzeAvailable.value = 37;
+
+                    this.updateModalSummary();
+                }
+            }
+
+            // 显示通知
+            showNotification(message, duration = 3000) {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--accent-color);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                    z-index: 2000;
+                    font-size: 14px;
+                    font-weight: 500;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                `;
+
+                document.body.appendChild(notification);
+
+                // 显示动画
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+
+                // 自动移除
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, duration);
+            }
+
+            // 更新奖杯数据（用于动态更新）
+            updateTrophy(type, count) {
+                if (this.data.hasOwnProperty(type)) {
+                    this.data[type] = Math.max(0, count);
+                    this.updateUI();
+                    this.saveConfig();
+                }
+            }
+
+            // 批量更新奖杯数据
+            updateTrophies(newData) {
+                Object.assign(this.data, newData);
+                this.updateUI();
+                this.saveConfig();
+            }
+
+            // 重置所有奖杯数据
+            resetTrophies() {
+                const confirmed = confirm('确定要重置所有奖杯数据吗？此操作不可撤销。');
+                if (confirmed) {
+                    this.data = {
+                        totalAvailable: this.data.totalAvailable,
+                        platinum: 0,
+                        gold: 0,
+                        silver: 0,
+                        bronze: 0
+                    };
+                    this.updateUI();
+                    this.saveConfig();
+                }
+            }
+
+            // 导出配置
+            exportConfig() {
+                const dataStr = JSON.stringify(this.config, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'trophy-config.json';
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // 获取奖杯数据
+            getData() {
+                return { ...this.data };
+            }
+
+            // 获取完整配置
+            getConfig() {
+                return { ...this.config };
+            }
+        }
+
+        // 工具函数
+        const Utils = {
+            // 防抖函数
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+
+            // 数字动画
+            animateNumber(element, start, end, duration = 800) {
+                const range = end - start;
+                const increment = range / (duration / 16);
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                        current = end;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.round(current);
+                }, 16);
+            },
+
+            // 格式化日期
+            formatDate(date) {
+                return new Date(date).toLocaleDateString('zh-CN');
+            }
+        };
+
+        // 初始化应用
+        let trophyManager;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            trophyManager = new TrophyManager();
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            // F键打开悬浮窗（已在TrophyManager中处理）
+            
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 's':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.saveConfig();
+                            trophyManager.showNotification('配置已保存');
+                        }
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.resetTrophies();
+                        }
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.exportConfig();
+                        }
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        if (trophyManager) {
+                            trophyManager.toggleTheme();
+                            trophyManager.showNotification('主题已切换');
+                        }
+                        break;
+                }
+            }
+        });
+
+        // 导出到全局作用域，方便调试和外部调用
+        window.TrophyApp = {
+            manager: () => trophyManager,
+            updateTrophy: (type, count) => trophyManager?.updateTrophy(type, count),
+            updateTrophies: (data) => trophyManager?.updateTrophies(data),
+            resetTrophies: () => trophyManager?.resetTrophies(),
+            exportConfig: () => trophyManager?.exportConfig(),
+            getData: () => trophyManager?.getData(),
+            getConfig: () => trophyManager?.getConfig(),
+            toggleTheme: () => trophyManager?.toggleTheme(),
+            setTheme: (theme) => {
+                if (trophyManager && ['dark', 'light'].includes(theme)) {
+                    trophyManager.config.settings.theme = theme;
+                    trophyManager.applyTheme();
+                    trophyManager.saveConfig();
+                }
+            },
+            // 新增悬浮窗相关方法
+            openModal: () => trophyManager?.openModal(),
+            closeModal: () => trophyManager?.closeModal(),
+            setAvailableData: (data) => {
+                if (trophyManager) {
+                    Object.assign(trophyManager.availableData, data);
+                    trophyManager.updateUI();
+                    trophyManager.saveConfig();
+                }
+            },
+            getAvailableData: () => trophyManager?.availableData,
+            // 新增分数相关方法
+            getScores: () => trophyManager?.getTrophyScores(),
+            getEarnedScore: () => trophyManager?.getEarnedScore(),
+            getTotalScore: () => trophyManager?.getTotalScore(),
+            getScoreBreakdown: () => {
+                if (!trophyManager) return null;
+                const scores = trophyManager.getTrophyScores();
+                const data = trophyManager.data;
+                const available = trophyManager.availableData;
+                
+                return {
+                    earned: {
+                        platinum: data.platinum * scores.platinum,
+                        gold: data.gold * scores.gold,
+                        silver: data.silver * scores.silver,
+                        bronze: data.bronze * scores.bronze,
+                        total: trophyManager.getEarnedScore()
+                    },
+                    available: {
+                        platinum: available.platinum * scores.platinum,
+                        gold: available.gold * scores.gold,
+                        silver: available.silver * scores.silver,
+                        bronze: available.bronze * scores.bronze,
+                        total: trophyManager.getTotalScore()
+                    },
+                    percentage: trophyManager.getProgressPercentage()
+                };
+            }
+        };
+
+        // 页面卸载时保存数据
+        window.addEventListener('beforeunload', () => {
+            if (trophyManager) {
+                trophyManager.saveConfig();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
